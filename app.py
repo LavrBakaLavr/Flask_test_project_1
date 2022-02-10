@@ -64,6 +64,7 @@ def post_delete(id):
         return "При удалении статьи произошла ошибка"
 
 @app.route('/posts/<int:id>/update', methods=('POST', 'GET'))
+@auth.login_required
 def post_update(id):
     article = Article.query.get(id)
     if request.method == 'POST':
@@ -80,6 +81,7 @@ def post_update(id):
         return render_template("post-update.html", article = article)
 
 @app.route('/create-article', methods=('POST', 'GET'))
+@auth.login_required
 def create_article():
     if request.method == 'POST':
         title = request.form['title']
