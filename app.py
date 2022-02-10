@@ -1,12 +1,25 @@
 #from crypt import methods
-from flask import Flask, redirect, render_template, url_for, request, redirect
+from flask import Flask, jsonify, make_response, redirect, render_template, url_for, request, redirect
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
+from flask_httpauth import HTTPBasicAuth
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///blog.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
+
+auth = HTTPBasicAuth()
+
+@auth.get_password
+def get_password(username):
+    if username == 'miguel':
+        return 'python'
+    return None
+
+@auth.error_handler
+def unauthorized():
+    return make_response(jsonify({'error': 'Unauthorized access'}), 401)
 
 class Article(db.Model):
     id = db.Column(db.Integer, primary_key = True)
@@ -39,6 +52,7 @@ def post_detail(id):
     return render_template("post_detail.html", article = article)
 
 @app.route('/posts/<int:id>/del')
+@auth.login_required
 def post_delete(id):
     article = Article.query.get_or_404(id)
 
